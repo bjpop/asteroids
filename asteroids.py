@@ -1,5 +1,3 @@
-#!/opt/local/bin/python2.7
-
 import pygame
 import sys
 from vector2D import Vec2d
