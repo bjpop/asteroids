@@ -238,21 +238,24 @@ def game_loop(window_surface):
     while True:
         window_surface.fill(BLACK)
 
+        key_pressed = pygame.key.get_pressed()
+        if key_pressed[K_LEFT]:
+            ship.turn_left(10)
+        if key_pressed[K_RIGHT]:
+            ship.turn_right(10)
+        if key_pressed[K_UP]: 
+            ship.accelerate(1)
+        if key_pressed[K_SPACE]:
+            direction = Vec2d(1, 0).rotated(ship.rotation)
+            bullets.append(Bullet(ship.position, direction))
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     terminate()
-                if event.key == K_LEFT:
-                    ship.turn_left(10)
-                if event.key == K_RIGHT:
-                    ship.turn_right(10)
-                if event.key == K_UP: 
-                    ship.accelerate(1)
-                if event.key == K_SPACE:
-                    direction = Vec2d(1, 0).rotated(ship.rotation)
-                    bullets.append(Bullet(ship.position, direction))
+
 
         if len(rocks) < MIN_NUM_ROCKS:
             rocks.extend(spawn_init_rocks(MIN_NUM_ROCKS - len(rocks))) 
@@ -320,7 +323,7 @@ def main():
     pygame.init()
     window_surface = pygame.display.set_mode((MAX_X, MAX_Y), 0, 32)
     pygame.display.set_caption('asteroids')
-    pygame.key.set_repeat(50, 50)
+    #pygame.key.set_repeat(50, 50)
 
     start_screen(window_surface, 'ASTEROIDS', 'press return key to start')
 
