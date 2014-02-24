@@ -15,11 +15,11 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 MAX_SHIP_SPEED = 10
-FPS = 40
-BULLET_SPEED = 30
+FPS = 40 
+BULLET_SPEED = 15 
 BULLET_LENGTH = 10 
 BULLET_WIDTH = 2
-MAX_BULLET_AGE = 10
+MAX_BULLET_AGE = 15 
 MIN_ROCK_RADIUS = 20
 MAX_ROCK_RADIUS = 80
 ROCK_RADIUS_SIZE_STEP = 10
@@ -27,6 +27,7 @@ ROCK_RADIUSES = range(MIN_ROCK_RADIUS, MAX_ROCK_RADIUS+1, ROCK_RADIUS_SIZE_STEP)
 MIN_ROCK_SPEED = 1
 MAX_ROCK_SPEED = 4
 MIN_NUM_ROCKS = 5
+MAX_BULLETS = 2 
 
 
 def random_colour():
@@ -246,8 +247,11 @@ def game_loop(window_surface):
         if key_pressed[K_UP]: 
             ship.accelerate(1)
         if key_pressed[K_SPACE]:
-            direction = Vec2d(1, 0).rotated(ship.rotation)
-            bullets.append(Bullet(ship.position, direction))
+            # XXX maybe we should have a timer on the gun to limit
+            # the rate at which bullets can be fired?
+            if len(bullets) < MAX_BULLETS:
+                direction = Vec2d(1, 0).rotated(ship.rotation)
+                bullets.append(Bullet(ship.position, direction))
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -323,7 +327,6 @@ def main():
     pygame.init()
     window_surface = pygame.display.set_mode((MAX_X, MAX_Y), 0, 32)
     pygame.display.set_caption('asteroids')
-    #pygame.key.set_repeat(50, 50)
 
     start_screen(window_surface, 'ASTEROIDS', 'press return key to start')
 
