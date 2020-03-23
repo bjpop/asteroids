@@ -53,7 +53,8 @@ Future code improvements:
 
 import pygame
 import sys
-from vector2D import Vec2d
+#from vector2D import Vec2d
+from pygame.math import Vector2
 from pygame.locals import (QUIT, KEYDOWN, K_RETURN,
    K_LEFT, K_RIGHT, K_UP, K_DOWN, K_SPACE, K_ESCAPE)
 from random import choice, randint 
@@ -192,7 +193,7 @@ class Bullet(GameObject):
     speed) while they are alive.
     '''
     def __init__(self, position, direction):
-        norm_direction = direction.normalized()
+        norm_direction = direction.normalize()
         velocity = norm_direction * BULLET_SPEED
         super(Bullet, self).__init__(position, velocity)
         self.direction = norm_direction
@@ -255,7 +256,8 @@ class SpaceShip(GameObject):
     facing upwards.
     '''
     def __init__(self, position, rotation, speed, size_major, size_minor):
-        velocity = Vec2d(speed,0).rotated(rotation)
+        #velocity = Vec2d(speed,0).rotated(rotation)
+        velocity = Vector2(speed,0).rotate(rotation)
         super(SpaceShip, self).__init__(position, velocity)
         self.rotation = rotation # degrees
         self.size_major = size_major 
@@ -287,14 +289,15 @@ class SpaceShip(GameObject):
 
         # Compute a vector of acceleration in the direction
         # that the ship is currently facing.
-        accel_vector = Vec2d(1,0).rotated(self.rotation) * amount
+        #accel_vector = Vec2d(1,0).rotated(self.rotation) * amount
+        accel_vector = Vector2(1,0).rotate(self.rotation) * amount
 
         # The new velocity is equal to the current velocity plus
         # the acceleration vector.
         new_velocity = self.velocity + accel_vector
 
         # Compute the speed of the new_velocity.
-        speed = self.velocity.length
+        speed = self.velocity.length()
 
         # Limit the maximum speed of the ship.
         if speed > MAX_SHIP_SPEED:
@@ -311,9 +314,12 @@ class SpaceShip(GameObject):
         size_major = self.size_major
         size_minor = self.size_minor
         rotation = self.rotation
-        p1 = position + Vec2d(size_major, 0).rotated(rotation)
-        p2 = position + Vec2d(size_minor, 0).rotated(rotation + 120)
-        p3 = position + Vec2d(size_minor, 0).rotated(rotation + 240)
+        #p1 = position + Vec2d(size_major, 0).rotated(rotation)
+        p1 = position + Vector2(size_major, 0).rotate(rotation)
+        #p2 = position + Vec2d(size_minor, 0).rotated(rotation + 120)
+        p2 = position + Vector2(size_minor, 0).rotate(rotation + 120)
+        #p3 = position + Vec2d(size_minor, 0).rotated(rotation + 240)
+        p3 = position + Vector2(size_minor, 0).rotate(rotation + 240)
         return ((p1.x, p1.y), (p2.x, p2.y), (p3.x, p3.y))
 
 
@@ -323,7 +329,8 @@ def bullet_hit_rock(bullet, rock):
     A bullet has hit a rock if its end position (the front of
     the bullet) is inside the circle defined for the rock.'''
     end_pos = bullet.position + bullet.direction * BULLET_LENGTH
-    return is_inside_circle(end_pos, Vec2d(rock.position), rock.radius)
+    #return is_inside_circle(end_pos, Vec2d(rock.position), rock.radius)
+    return is_inside_circle(end_pos, Vector2(rock.position), rock.radius)
 
 
 def ship_hit_rock(ship, rock):
@@ -332,16 +339,19 @@ def ship_hit_rock(ship, rock):
     A space ship has hit a rock if any of the three corner
     vertices of the space ship triangle are inside the circle
     defined for the rock.'''
-    rock_vec = Vec2d(rock.position)
+    #rock_vec = Vec2d(rock.position)
+    rock_vec = Vector2(rock.position)
     for point in ship.points():
-        if is_inside_circle(Vec2d(point), rock_vec, rock.radius):
+        #if is_inside_circle(Vec2d(point), rock_vec, rock.radius):
+        if is_inside_circle(Vector2(point), rock_vec, rock.radius):
             return True
     return False
     
 
 def is_inside_circle(point, center, radius):
     '''Test if a point is inside a circle.'''
-    return point.get_distance(center) <= radius
+    #return point.get_distance(center) <= radius
+    return point.distance_to(center) <= radius
 
 
 def random_colour():
@@ -364,7 +374,8 @@ def spawn_rock(position, min_radius, max_radius):
     radius = choice(range(min_radius, max_radius, ROCK_RADIUS_SIZE_STEP))
     # Compute a random velocity for the rock.
     angle = randint(0, 359)
-    direction_vector = Vec2d(1, 0).rotated(angle)
+    #direction_vector = Vec2d(1, 0).rotated(angle)
+    direction_vector = Vector2(1, 0).rotate(angle)
     speed = randint(MIN_ROCK_SPEED, MAX_ROCK_SPEED)
     velocity = direction_vector * speed
     # Choose a random colour for the rock.
@@ -390,19 +401,21 @@ def spawn_offscreen_rocks(num_rocks):
     rocks = []
     # initialise rocks off to the negative X side of the window
     x_pos = -MAX_ROCK_RADIUS / 2
-    for _count in range(0, num_rocks / 2):
+    for _count in range(0, num_rocks // 2):
         # The Y position is randomly chosen from the screen Y coordinates.
         y_pos = randint(0, MAX_Y - 1)
-        position = Vec2d(x_pos, y_pos)
+        #position = Vec2d(x_pos, y_pos)
+        position = Vector2(x_pos, y_pos)
         new_rock = spawn_rock(position, MIN_ROCK_RADIUS, MAX_ROCK_RADIUS)
         rocks.append(new_rock)
 
     # initialise rocks off to the negative Y side of the window
     y_pos = -MAX_ROCK_RADIUS / 2
-    for _count in range(num_rocks / 2, num_rocks):
+    for _count in range(num_rocks // 2, num_rocks):
         # The X position is randomly chosen from the screen X coordinates.
         x_pos = randint(0, MAX_X - 1) 
-        position = Vec2d(x_pos, y_pos)
+        #position = Vec2d(x_pos, y_pos)
+        position = Vector2(x_pos, y_pos)
         new_rock = spawn_rock(position, MIN_ROCK_RADIUS, MAX_ROCK_RADIUS)
         rocks.append(new_rock)
     return rocks
@@ -509,7 +522,8 @@ def game_loop(window_surface, high_score):
     clock = pygame.time.Clock()
     # Choose an initial rotation for the ship.
     initial_rotation = randint(0, 359)
-    ship_position = Vec2d(START_X, START_Y)
+    #ship_position = Vec2d(START_X, START_Y)
+    ship_position = Vector2(START_X, START_Y)
     # Initialise the ship
     ship = SpaceShip(ship_position, rotation=initial_rotation,
         speed=1, size_major=20, size_minor=10) 
@@ -546,7 +560,8 @@ def game_loop(window_surface, high_score):
             if len(bullets) < MAX_BULLETS:
                 # Choose the bullet direction to be the same
                 # as the direction of the ship.
-                direction = Vec2d(1, 0).rotated(ship.rotation)
+                #direction = Vec2d(1, 0).rotated(ship.rotation)
+                direction = Vector2(1, 0).rotate(ship.rotation)
                 bullets.append(Bullet(ship.position, direction))
 
         # Check if the player wants to quit the game.
